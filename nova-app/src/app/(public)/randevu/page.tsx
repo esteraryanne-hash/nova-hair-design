@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createAppointment } from "@/lib/firebase";
 
@@ -16,6 +16,30 @@ export default function Randevu() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const [modelData, setModelData] = useState({
+    name: "Knotless Braids Signature",
+    category: "Örgü",
+    price: "1.200 TL",
+    duration: "2.5 Saat",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAUuE2rQBizZcYTXxusvLE4Vaz3cg5gunY7a0ixVj1t3BQ7jpXtdqi_0X3o1EeLmKszTXrFF3BNLlU0fqL9mFFmVOhCU4rCOlFAV5z0zXbDys0h_X4tlLpTKzaeb2UbfyuM78b6YpWfXXYwzbWM8qoEa-0qWhuFYm0CZygRyuOZDHA8OZ2iuu8GIZD3sI8p9DyS6RiwL7r6pV0czA0aK-ZVhA9eY3LPNJr_rt0_UeR3wbdLuwHbCsUY"
+  });
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem("selectedModel");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setModelData({
+          name: parsed.name || "Knotless Braids Signature",
+          category: parsed.tagLabel || "Örgü",
+          price: parsed.price || "1.200 TL",
+          duration: parsed.duration || "2.5 Saat",
+          image: parsed.image || modelData.image
+        });
+      } catch (e) {}
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (location === "home" && !address.trim()) {
@@ -28,8 +52,8 @@ export default function Randevu() {
     const data = {
       customerName,
       phone,
-      service: "Örgü",
-      model: "Knotless Braids Signature",
+      service: modelData.category,
+      model: modelData.name,
       locationType: location,
       date: selectedDate,
       time: selectedTime,
@@ -84,21 +108,21 @@ export default function Randevu() {
             </div>
             <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center gap-space-md">
               <div className="relative w-20 h-24 rounded-lg overflow-hidden shrink-0 bg-surface-container">
-                <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUuE2rQBizZcYTXxusvLE4Vaz3cg5gunY7a0ixVj1t3BQ7jpXtdqi_0X3o1EeLmKszTXrFF3BNLlU0fqL9mFFmVOhCU4rCOlFAV5z0zXbDys0h_X4tlLpTKzaeb2UbfyuM78b6YpWfXXYwzbWM8qoEa-0qWhuFYm0CZygRyuOZDHA8OZ2iuu8GIZD3sI8p9DyS6RiwL7r6pV0czA0aK-ZVhA9eY3LPNJr_rt0_UeR3wbdLuwHbCsUY" alt="Selected Model" />
-                <div className="absolute bottom-1 left-1 bg-primary/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] text-on-primary font-label-caps uppercase">Örgü</div>
+                <img className="w-full h-full object-cover" src={modelData.image} alt="Selected Model" />
+                <div className="absolute bottom-1 left-1 bg-primary/80 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] text-on-primary font-label-caps uppercase truncate max-w-[70px]">{modelData.category}</div>
               </div>
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-1">
-                  <h2 className="font-headline-sm text-headline-sm text-on-surface truncate">Knotless Braids Signature</h2>
+                  <h2 className="font-headline-sm text-headline-sm text-on-surface truncate">{modelData.name}</h2>
                 </div>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Uzman stilist el işçiliği</p>
                 <div className="flex items-center gap-space-sm mt-space-sm">
                   <div className="flex items-center gap-1 bg-surface-container-low px-2 py-1 rounded-lg">
                     <span className="material-symbols-outlined text-[16px] text-on-surface-variant">schedule</span>
-                    <span className="font-label-md text-label-md text-on-surface">2.5 Saat</span>
+                    <span className="font-label-md text-label-md text-on-surface">{modelData.duration}</span>
                   </div>
                   <div className="flex items-center gap-1 bg-primary-fixed px-2.5 py-1 rounded-lg">
-                    <span className="font-label-lg text-label-lg text-on-primary-fixed">1.200 TL</span>
+                    <span className="font-label-lg text-label-lg text-on-primary-fixed whitespace-nowrap">{modelData.price}</span>
                   </div>
                 </div>
               </div>
@@ -318,9 +342,9 @@ export default function Randevu() {
                 <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tarih</span>
                 <span className="font-label-lg text-label-lg text-on-surface">16 Ekim, {selectedTime}</span>
               </div>
-              <div className="flex flex-col text-left">
+              <div className="flex flex-col text-left min-w-0 flex-1 ml-2">
                 <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">Model</span>
-                <span className="font-label-lg text-label-lg text-on-surface">Knotless Braids</span>
+                <span className="font-label-lg text-label-lg text-on-surface truncate block" title={modelData.name}>{modelData.name}</span>
               </div>
             </div>
             <button

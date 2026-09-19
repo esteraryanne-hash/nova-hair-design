@@ -48,8 +48,9 @@ export default function Kesfet() {
 
   const filteredModels = models.filter((m) => filter === "all" || m.category === filter);
 
-  const handleSelect = (modelName: string) => {
-    setSelectedModel(modelName);
+  const handleSelect = (model: any) => {
+    setSelectedModel(model.name);
+    sessionStorage.setItem('selectedModel', JSON.stringify(model));
     setToastOpen(true);
     setTimeout(() => setToastOpen(false), 3000);
   };
@@ -137,7 +138,7 @@ export default function Kesfet() {
               </div>
               <button
                 className="w-full h-12 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-xs shadow-sm active:scale-[0.98] transition-transform hover:bg-primary"
-                onClick={() => handleSelect(model.name)}
+                onClick={() => handleSelect(model)}
               >
                 <span>Bu Modeli Seç</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
