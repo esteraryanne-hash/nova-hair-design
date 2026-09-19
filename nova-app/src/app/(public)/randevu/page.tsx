@@ -1,16 +1,58 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { createAppointment } from "@/lib/firebase";
 
 export default function Randevu() {
   const [location, setLocation] = useState("salon");
   const [selectedDate, setSelectedDate] = useState("2024-10-16");
   const [selectedTime, setSelectedTime] = useState("11:00");
   const [successSheet, setSuccessSheet] = useState(false);
+  
+  const [customerName, setCustomerName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [note, setNote] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessSheet(true);
+    if (location === "home" && !address.trim()) {
+      setErrorMsg("Evde hizmet için lütfen geçerli bir adres giriniz.");
+      return;
+    }
+    setErrorMsg("");
+    setIsLoading(true);
+
+    const data = {
+      customerName,
+      phone,
+      service: "Örgü",
+      model: "Knotless Braids Signature",
+      locationType: location,
+      date: selectedDate,
+      time: selectedTime,
+      address: location === "home" ? address : "",
+      note,
+      status: "pending"
+    };
+
+    const result = await createAppointment(data);
+    setIsLoading(false);
+
+    if (result.success) {
+      setSuccessSheet(true);
+      setCustomerName("");
+      setPhone("");
+      setAddress("");
+      setNote("");
+      setLocation("salon");
+      setSelectedDate("2024-10-16");
+      setSelectedTime("11:00");
+    } else {
+      setErrorMsg("Randevu kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   };
 
   return (
@@ -117,7 +159,7 @@ export default function Randevu() {
                   <span className="material-symbols-outlined text-[18px] text-secondary">location_on</span>
                   Hizmet Verilecek Adres Bilgisi
                 </label>
-                <textarea className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded-lg outline-none focus:bg-surface-container-lowest focus:shadow-md transition-shadow resize-none placeholder:text-outline-variant" id="service-address" placeholder="İlçe, Mahalle, Cadde, Bina & Daire No, Kapı Zili ve Yol Tarifi..." rows={3}></textarea>
+                <textarea className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md p-space-sm rounded-lg outline-none focus:bg-surface-container-lowest focus:shadow-md transition-shadow resize-none placeholder:text-outline-variant" id="service-address" placeholder="İlçe, Mahalle, Cadde, Bina & Daire No, Kapı Zili ve Yol Tarifi..." rows={3} value={address} onChange={(e) => setAddress(e.target.value)} required={location === "home"}></textarea>
                 <span className="font-body-sm text-body-sm text-on-surface-variant">İstanbul içi tüm merkezi bölgelere servisimiz mevcuttur.</span>
               </div>
             )}
@@ -209,14 +251,14 @@ export default function Randevu() {
                 <label className="font-label-md text-label-md text-on-surface" htmlFor="client-name">Ad Soyad</label>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3">person_outline</span>
-                  <input className="w-full h-12 pl-10 pr-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all placeholder:text-outline-variant" id="client-name" placeholder="Örn: Selin Kaya" required type="text" />
+                  <input className="w-full h-12 pl-10 pr-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all placeholder:text-outline-variant" id="client-name" placeholder="Örn: Selin Kaya" required type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
                 </div>
               </div>
               <div className="flex flex-col gap-space-2xs">
                 <label className="font-label-md text-label-md text-on-surface" htmlFor="client-phone">Telefon Numarası</label>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3">call</span>
-                  <input className="w-full h-12 pl-10 pr-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all placeholder:text-outline-variant" id="client-phone" placeholder="0532 ..." required type="tel" />
+                  <input className="w-full h-12 pl-10 pr-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all placeholder:text-outline-variant" id="client-phone" placeholder="0532 ..." required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
               </div>
               <div className="flex flex-col gap-space-2xs">
@@ -225,7 +267,7 @@ export default function Randevu() {
                   <span className="font-body-sm text-body-sm text-on-surface-variant">Opsiyonel</span>
                 </div>
                 <div className="relative flex items-start">
-                  <textarea className="w-full p-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all resize-none placeholder:text-outline-variant" id="client-notes" placeholder="Saç uzunluğu, alerjik hassasiyet veya stil tercihleriniz..." rows={2}></textarea>
+                  <textarea className="w-full p-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface outline-none focus:bg-surface-container-lowest focus:shadow-inner transition-all resize-none placeholder:text-outline-variant" id="client-notes" placeholder="Saç uzunluğu, alerjik hassasiyet veya stil tercihleriniz..." rows={2} value={note} onChange={(e) => setNote(e.target.value)}></textarea>
                 </div>
               </div>
             </div>
@@ -243,9 +285,15 @@ export default function Randevu() {
 
           {/* Buton */}
           <div className="flex flex-col gap-space-2xs pt-space-xs">
-            <button className="w-full h-14 bg-primary-container hover:bg-primary active:scale-[0.99] text-on-primary font-label-lg text-label-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-space-xs" type="submit">
-              <span>Randevu Talebi Gönder</span>
-              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            {errorMsg && (
+              <div className="mb-2 p-3 rounded-lg bg-error-container text-on-error-container text-sm font-medium flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">error</span>
+                {errorMsg}
+              </div>
+            )}
+            <button className="w-full h-14 bg-primary-container hover:bg-primary active:scale-[0.99] text-on-primary font-label-lg text-label-lg rounded-xl shadow-md transition-all flex items-center justify-center gap-space-xs disabled:opacity-70 disabled:cursor-not-allowed" type="submit" disabled={isLoading}>
+              <span>{isLoading ? "İşleniyor..." : "Randevu Talebi Gönder"}</span>
+              {!isLoading && <span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
             </button>
             <div className="flex items-center justify-center gap-1 text-on-surface-variant py-1">
               <span className="material-symbols-outlined text-[14px]">lock</span>
@@ -256,8 +304,8 @@ export default function Randevu() {
 
         {/* Tamamlandı Başarı Modal/Banner Diyaloğu */}
         <div className={`fixed inset-0 z-50 bg-primary-container/40 backdrop-blur-sm items-end justify-center ${successSheet ? 'flex' : 'hidden'}`}>
-          <div className="bg-surface-container-lowest w-full max-w-lg rounded-t-3xl p-space-xl flex flex-col items-center text-center shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-space-md text-primary-container">
+          <div className="bg-surface-container-lowest w-full max-w-lg rounded-t-3xl p-space-xl pb-32 max-h-[95vh] overflow-y-auto flex flex-col items-center text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-space-md text-primary-container shrink-0">
               <span className="material-symbols-outlined text-[36px]">check_circle</span>
             </div>
             <span className="font-label-caps text-label-caps text-secondary uppercase tracking-widest mb-space-2xs">Talebiniz Alındı</span>
