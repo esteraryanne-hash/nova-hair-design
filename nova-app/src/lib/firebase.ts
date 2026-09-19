@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -42,4 +43,7 @@ export const createAppointment = async (appointmentData: AppointmentData) => {
   }
 };
 
-export { app, db };
+// Initialize Auth
+const auth = getAuth(app);
+
+export { app, db, auth };
